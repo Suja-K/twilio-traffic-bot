@@ -1,14 +1,15 @@
+import os
 import requests
 import folium
 
-from flask import Flask, request, send_file
+from flask import Flask, request
 from twilio.twiml.messaging_response import MessagingResponse
 
 app = Flask(__name__)
 
 
 def get_traffic_data(lat, lon):
-    params = {'point': f'{lat},{lon}', 'unit': 'mph', 'thickness': 14, 'key': 'XXXXX'}
+    params = {'point': f'{lat},{lon}', 'unit': 'mph', 'thickness': 14, 'key': os.environ['TOMTOM_API_KEY']}
     base_url = 'https://api.tomtom.com/traffic/services/4/flowSegmentData/absolute/10/json'
     data = requests.get(base_url, params=params).json()
     return data
@@ -45,8 +46,7 @@ def create_map():
     m = folium.Map(location=(lat, lon), zoom_start=15)
     folium.PolyLine(points, color='green', weight=10).add_to(m)
 
-    m.save('map.html')
-    return send_file('map.html')
+    return m._repr_html_()
 
 
 @app.route('/bot', methods=['POST'])
